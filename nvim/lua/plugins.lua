@@ -94,11 +94,46 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter-textobjects",
   },
-
+  {
+    "hrsh7th/nvim-cmp",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "hrsh7th/cmp-buffer",
+      "hrsh7th/cmp-path",
+      -- "hrsh7th/cmp-vsnip",
+      -- "hrsh7th/vim-vsnip",
+    },
+    config = function()
+    local cmp = require("cmp")
+    cmp.setup({
+      mapping = {
+        -- Manually trigger completion with <C-Space>
+        ['<C-Space>'] = require('cmp').mapping.complete(),
+        -- Accept the selected completion item with Enter
+        ['<CR>'] = require('cmp').mapping.confirm({ select = true }),
+        -- Navigate through the popup menu
+        ['<Tab>'] = require('cmp').mapping.select_next_item(),
+        ['<S-Tab>'] = require('cmp').mapping.select_prev_item(),
+      },
+      sources = {
+        { name = 'nvim_lsp' },
+        { name = 'buffer' },
+        { name = 'path' },
+      },
+      -- Disable automatic popup triggering
+      completion = {
+        autocomplete = false, -- Prevent auto-triggering
+      },
+    })
+    end,
+  },
   {
     "neovim/nvim-lspconfig",
     config = function()
       local lspconfig = require("lspconfig")
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      local cmp_nvim_lsp = require("cmp_nvim_lsp")
+      capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
       lspconfig.clangd.setup({})
       lspconfig.rust_analyzer.setup({
         settings = {
@@ -106,6 +141,9 @@ require("lazy").setup({
         }
       })
       lspconfig.ts_ls.setup({})
+      lspconfig.pyright.setup({
+        capabilities = capabilities,
+      })
     end,
   },
   {
@@ -126,7 +164,5 @@ require("lazy").setup({
     { "<leader>fw", function() require('telescope.builtin').grep_string() end,  desc = "Telescope help tags"  },
     },
   }
-
-
 })
 
